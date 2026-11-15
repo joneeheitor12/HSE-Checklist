@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Auditoria HSE | Comportamento e Condições Seguras (BYD VQ)</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0f1115;
+      --bg-secondary: #181b21;
+      --bg-tertiary: #22262f;
+      --accent: #ff6b00;
+      --accent-hover: #e05e00;
+      --accent-soft: rgba(255, 107, 0, 0.15);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #2e3440;
+      --success: #10b981;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --na-color: #6b7280;
+      --whatsapp: #25d366;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      line-height: 1.5;
+      padding-bottom: 50px;
+    }
+
+    /* Top Bar */
+    .topbar {
+      background-color: var(--bg-secondary);
+      border-bottom: 2px solid var(--accent);
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .brand-title p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Cloud Sync Badge */
+    .cloud-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      transition: all 0.3s ease;
+    }
+    .cloud-badge.online {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: var(--success);
+    }
+    .cloud-badge.offline {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: var(--warning);
+    }
+    .cloud-badge.syncing {
+      background: rgba(255, 107, 0, 0.12);
+      border-color: rgba(255, 107, 0, 0.3);
+      color: var(--accent);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary { background-color: var(--accent); color: #fff; }
+    .btn-primary:hover { background-color: var(--accent-hover); }
+
+    .btn-excel { background-color: #107c41; color: #fff; }
+    .btn-excel:hover { background-color: #0c5e31; }
+
+    .btn-whatsapp { background-color: #128c7e; color: #fff; }
+    .btn-whatsapp:hover { background-color: #075e54; }
+
+    .btn-secondary {
+      background-color: var(--bg-tertiary);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--accent); }
+
+    .btn-danger {
+      background-color: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-danger:hover { background-color: var(--danger); color: #fff; }
+
+    .lang-switch {
+      display: flex;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 7px 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .lang-btn.active { background: var(--accent); color: #fff; }
+
+    /* Container */
+    .container {
+      max-width: 1240px;
+      margin: 16px auto;
+      padding: 0 12px;
+    }
+
+    /* Editing Mode Banner */
+    .edit-banner {
+      display: none;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid var(--warning);
+      color: #fcd34d;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Metadata Grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .form-control {
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+      width: 100%;
+    }
+
+    .form-control:focus { border-color: var(--accent); }
+    .form-control[readonly] {
+      background-color: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      border-style: dashed;
+    }
+
+    /* KPI Summary Bar */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .kpi-info h3 {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .kpi-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .kpi-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Checklist Table */
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 820px;
+    }
+
+    th {
+      background-color: var(--bg-tertiary);
+      color: var(--text-main);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 2px solid var(--border);
+    }
+
+    th.center, td.center { text-align: center; }
+
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 0.88rem;
+    }
+
+    tr:hover { background-color: rgba(255, 255, 255, 0.02); }
+
+    .item-title {
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+
+    .item-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Radio Pills */
+    .status-group {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .status-btn {
+      width: 42px;
+      height: 38px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .status-btn.c.active { background: var(--success); color: #fff; border-color: var(--success); }
+    .status-btn.nc.active { background: var(--danger); color: #fff; border-color: var(--danger); }
+    .status-btn.na.active { background: var(--na-color); color: #fff; border-color: var(--na-color); }
+
+    .table-input {
+      width: 100%;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 0.88rem;
+      resize: vertical;
+      min-height: 40px;
+    }
+
+    .table-input:focus { border-color: var(--accent); outline: none; }
+    .table-input.required-nc { border-color: var(--danger); background: rgba(239, 68, 68, 0.08); }
+
+    /* Footer Actions */
+    .form-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    /* Badges */
+    .badge {
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge-high { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+    .badge-mid { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+    .badge-low { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+
+    /* WhatsApp Report Box */
+    .zap-box {
+      background: #0b141a;
+      border: 1px solid #202c33;
+      border-left: 4px solid var(--whatsapp);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.84rem;
+      color: #e9edef;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+      line-height: 1.45;
+    }
+
+    .zap-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      left: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+      background: var(--accent);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 999;
+    }
+
+    .action-btns {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-icon {
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-tertiary);
+      color: var(--text-main);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-icon:hover { border-color: var(--accent); }
+    .btn-icon.edit:hover { background: rgba(245, 158, 11, 0.2); border-color: var(--warning); color: #fcd34d; }
+    .btn-icon.del:hover { background: rgba(239, 68, 68, 0.2); border-color: var(--danger); color: #fca5a5; }
+    .btn-icon.zap:hover { background: rgba(37, 211, 102, 0.2); border-color: var(--whatsapp); color: #6ee7b7; }
+
+    /* MOBILE RESPONSIVE FIXES (iPhone & Android Safari/Chrome) */
+    @media (max-width: 768px) {
+      .topbar { padding: 10px 12px; flex-direction: column; align-items: stretch; gap: 10px; }
+      .topbar-actions { justify-content: space-between; width: 100%; }
+      .brand-title h1 { font-size: 0.95rem; }
+      .card { padding: 12px; }
+      /* Previne zoom automático no iPhone ao focar em inputs */
+      input[type="text"], input[type="date"], select, textarea {
+        font-size: 16px !important;
+      }
+    }
+  </style>
+
+  <!-- Firebase SDK Integration & Cloud Sync Queue -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+    import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtZFULTFp6-cf91wukKELDO4F9uJIGv1s",
+      authDomain: "hse-checklist-d4262.firebaseapp.com",
+      projectId: "hse-checklist-d4262",
+      storageBucket: "hse-checklist-d4262.firebasestorage.app",
+      messagingSenderId: "155315197520",
+      appId: "1:155315197520:web:0ee903b775b63161632355",
+      measurementId: "G-RE311SF6Q8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    window.fb = { db, collection, getDocs, setDoc, doc, deleteDoc };
+
+    window.updateCloudStatus = function(status, count = 0) {
+      const badge = document.getElementById('cloudSyncBadge');
+      const text = document.getElementById('cloudStatusText');
+      if (!badge || !text) return;
+
+      if (status === 'online') {
+        badge.className = 'cloud-badge online';
+        text.textContent = currentLang === 'zh' ? '已云端同步' : 'Sincronizado na Nuvem';
+      } else if (status === 'offline') {
+        badge.className = 'cloud-badge offline';
+        text.textContent = currentLang === 'zh' ? (count > 0 ? `离线 (待同步: ${count})` : '离线 (本地保存)') : (count > 0 ? `Offline (Fila: ${count})` : 'Offline (Salvo Local)');
+      } else if (status === 'syncing') {
+        badge.className = 'cloud-badge syncing';
+        text.textContent = currentLang === 'zh' ? '正在同步至云端...' : 'Sincronizando...';
+      }
+    };
+
+    window.syncPendingAuditsToFirebase = async function() {
+      if (!navigator.onLine) {
+        const pending = JSON.parse(localStorage.getItem('hse_pending_sync') || '[]');
+        updateCloudStatus('offline', pending.length);
+        return;
+      }
+
+      const pending = JSON.parse(localStorage.getItem('hse_pending_sync') || '[]');
+      if (pending.length > 0) {
+        updateCloudStatus('syncing');
+        try {
+          for (const rec of pending) {
+            await setDoc(doc(db, 'hse_audits', String(rec.id)), rec);
+          }
+          localStorage.setItem('hse_pending_sync', '[]');
+          updateCloudStatus('online');
+        } catch (err) {
+          console.warn("Sync error:", err);
+          updateCloudStatus('offline', pending.length);
+          return;
+        }
+      } else {
+        updateCloudStatus('online');
+      }
+
+      try {
+        const querySnapshot = await getDocs(collection(db, 'hse_audits'));
+        const cloudAudits = [];
+        querySnapshot.forEach((docSnap) => { cloudAudits.push(docSnap.data()); });
+        if (cloudAudits.length > 0) {
+          cloudAudits.sort((a, b) => b.id - a.id);
+          savedAudits = cloudAudits;
+          localStorage.setItem('hse_audits_byd_v2', JSON.stringify(savedAudits));
+          if (typeof renderHistory === 'function') renderHistory();
+          if (typeof updateZapSourceDropdown === 'function') updateZapSourceDropdown();
+          if (typeof generateWhatsAppReport === 'function') generateWhatsAppReport();
+        }
+      } catch (err) {
+        console.warn("Cloud fetch warning:", err);
+      }
+    };
+
+    window.addEventListener('online', () => { syncPendingAuditsToFirebase(); });
+    window.addEventListener('offline', () => {
+      const pending = JSON.parse(localStorage.getItem('hse_pending_sync') || '[]');
+      updateCloudStatus('offline', pending.length);
+    });
+
+    setTimeout(() => {
+      if (navigator.onLine) { syncPendingAuditsToFirebase(); }
+      else {
+        const pending = JSON.parse(localStorage.getItem('hse_pending_sync') || '[]');
+        updateCloudStatus('offline', pending.length);
+      }
+    }, 800);
+  </script>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-badge">HSE / VQ</div>
+      <div class="brand-title">
+        <h1 data-i18n="appTitle">Auditoria HSE – Comportamento e Condições Seguras</h1>
+        <p data-i18n="appSubtitle">Centro de Qualidade • Sistema Bilíngue (PT / 中文)</p>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <div id="cloudSyncBadge" class="cloud-badge online" title="Status de Sincronização / 云端同步状态">
+        <span>☁️</span> <span id="cloudStatusText">Sincronizado na Nuvem</span>
+      </div>
+
+      <div class="lang-switch">
+        <button class="lang-btn active" id="btn-pt" onclick="setLanguage('pt')">PT</button>
+        <button class="lang-btn" id="btn-zh" onclick="setLanguage('zh')">中文</button>
+        <button class="lang-btn" id="btn-bi" onclick="setLanguage('bi')">PT / 中文</button>
+      </div>
+
+      <button class="btn btn-excel" onclick="exportToExcel()">
+        <span>📊</span>
+        <span data-i18n="btnExportExcel">Excel (.xlsx)</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- EDITING BANNER -->
+    <div id="editBanner" class="edit-banner">
+      <span id="editBannerText">✏️ MODO DE EDIÇÃO ATIVO</span>
+      <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.78rem;" onclick="cancelEdit()" data-i18n="btnCancelEdit">Cancelar</button>
+    </div>
+
+    <!-- METADATA HEADER -->
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title" data-i18n="secInfo">1. Identificação da Auditoria</span>
+        <span style="font-size: 0.8rem; color: var(--text-muted);" id="recordCounter">0 salvos</span>
+      </div>
+
+      <div class="meta-grid">
+        <div class="form-group">
+          <label data-i18n="lblCode">Código</label>
+          <input type="text" id="metaCode" class="form-control" value="HSE-CK-OK-001" readonly />
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblRev">Revisão</label>
+          <input type="text" id="metaRev" class="form-control" value="01" readonly />
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblDate">Data</label>
+          <input type="date" id="metaDate" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblArea">Área</label>
+          <select id="metaArea" class="form-control">
+            <option value="Linha OK">Linha OK / OK线</option>
+            <option value="Linha de">Linha de / 线体</option>
+            <option value="Teste Line">Teste Line / 检测线</option>
+            <option value="Road Test">Road Test / 路试</option>
+            <option value="Chuva">Chuva / 淋雨测试</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblShift">Turno</label>
+          <select id="metaShift" class="form-control">
+            <option value="Turno A">Turno A / A班</option>
+            <option value="Turno B">Turno B / B班</option>
+            <option value="Turno C">Turno C / C班</option>
+            <option value="ADM">ADM / 行政班</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblAuditor">Auditor</label>
+          <input type="text" id="metaAuditor" class="form-control" placeholder="Seu nome / 审核员" />
+        </div>
+        <div class="form-group">
+          <label data-i18n="lblAreaResp">Resp. Área</label>
+          <input type="text" id="metaAreaResp" class="form-control" placeholder="Líder / 区域负责人" />
+        </div>
+      </div>
+    </section>
+
+    <!-- KPI SUMMARY -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <h3 data-i18n="kpiIcsTitle">Comportamento Seguro (ICS)</h3>
+          <div class="kpi-value" id="kpiIcsValue">0.0%</div>
+          <div class="kpi-sub" id="kpiIcsDetail">C: 0 | NC: 0 | NA: 0</div>
+        </div>
+        <div style="font-size: 1.8rem;">🦺</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <h3 data-i18n="kpiCondTitle">Condições Seguras</h3>
+          <div class="kpi-value" id="kpiCondValue">0.0%</div>
+          <div class="kpi-sub" id="kpiCondDetail">C: 0 | NC: 0 | NA: 0</div>
+        </div>
+        <div style="font-size: 1.8rem;">🏭</div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-info">
+          <h3 data-i18n="kpiOverallTitle">Média Geral</h3>
+          <div class="kpi-value" id="kpiOverallValue">0.0%</div>
+          <div class="kpi-sub" data-i18n="kpiFormulaNote">C / (C + NC) × 100</div>
+        </div>
+        <div style="font-size: 1.8rem;">📈</div>
+      </div>
+    </section>
+
+    <!-- SECTION A -->
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title" data-i18n="secATitle">A. Comportamento Seguro</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">Nº</th>
+              <th style="width: 24%;" data-i18n="thItem">Item de Verificação</th>
+              <th style="width: 30%;" data-i18n="thCriteria">Critério de Avaliação</th>
+              <th class="center" style="width: 150px;" data-i18n="thStatus">Avaliação</th>
+              <th style="width: 17%;" data-i18n="thObs">Observação</th>
+              <th style="width: 17%;" data-i18n="thAction">Ação Imediata</th>
+            </tr>
+          </thead>
+          <tbody id="tbodySectionA"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION B -->
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title" data-i18n="secBTitle">B. Condições de Segurança da Área</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 40px;">Nº</th>
+              <th style="width: 24%;" data-i18n="thItem">Item de Verificação</th>
+              <th style="width: 30%;" data-i18n="thCriteria">Critério de Avaliação</th>
+              <th class="center" style="width: 150px;" data-i18n="thStatus">Avaliação</th>
+              <th style="width: 17%;" data-i18n="thObs">Observação</th>
+              <th style="width: 17%;" data-i18n="thAction">Ação Imediata</th>
+            </tr>
+          </thead>
+          <tbody id="tbodySectionB"></tbody>
+        </table>
+      </div>
+
+      <div class="form-footer">
+        <div style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="instructionsNote">
+          * Itens NC exigem preenchimento de Observação e Ação.
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="resetForm()" data-i18n="btnClear">Limpar</button>
+          <button class="btn btn-primary" id="btnSaveMain" onclick="saveAudit()" data-i18n="btnSave">💾 Salvar Lançamento</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section class="card">
+      <div class="card-header">
+        <span class="card-title" data-i18n="secHistory">Histórico de Lançamentos</span>
+        <button class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="clearAllRecords()" data-i18n="btnClearAll">Limpar Tudo</button>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="thHistDate">Data</th>
+              <th data-i18n="thHistArea">Área</th>
+              <th data-i18n="thHistShift">Turno</th>
+              <th data-i18n="thHistAuditor">Auditor</th>
+              <th class="center">ICS (%)</th>
+              <th class="center" data-i18n="thHistCond">Cond (%)</th>
+              <th class="center">C/NC/NA</th>
+              <th class="center" style="min-width: 190px;" data-i18n="thHistActions">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- WHATSAPP REPORT -->
+    <section class="card" id="zapReportSection">
+      <div class="card-header">
+        <span class="card-title" data-i18n="secZapTitle">📱 Relatório Executivo WhatsApp (Gestão China / Brasil)</span>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="copyWhatsAppReport()" data-i18n="btnCopyZap">📋 Copiar</button>
+          <button class="btn btn-whatsapp" onclick="sendToWhatsApp()" data-i18n="btnOpenZap">🚀 WhatsApp</button>
+        </div>
+      </div>
+
+      <div class="zap-controls">
+        <div class="form-group" style="flex: 1; min-width: 220px;">
+          <label data-i18n="lblZapSource">Origem:</label>
+          <select id="zapSourceSelect" class="form-control" onchange="generateWhatsAppReport()"></select>
+        </div>
+        <div class="form-group" style="flex: 1; min-width: 200px;">
+          <label data-i18n="lblZapFormat">Idioma do Relatório:</label>
+          <select id="zapFormatSelect" class="form-control" onchange="generateWhatsAppReport()">
+            <option value="bi">Bilíngue Executivo (PT + 中文) — Recomendado</option>
+            <option value="zh">Somente Chinês (纯中文管理汇报)</option>
+            <option value="pt">Somente Português (PT-BR)</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="zapPreviewBox" class="zap-box"></div>
+    </section>
+
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let currentLang = 'pt';
+    let editingRecordId = null;
+
+    const areaMapZh = {
+      "Linha OK": "OK线 (Linha OK)",
+      "Linha de": "线体 (Linha de)",
+      "Teste Line": "检测线 (Teste Line)",
+      "Road Test": "路试 (Road Test)",
+      "Chuva": "淋雨测试 (Chuva)"
+    };
+
+    const shiftMapZh = {
+      "Turno A": "A班 (Turno A)",
+      "Turno B": "B班 (Turno B)",
+      "Turno C": "C班 (Turno C)",
+      "ADM": "行政班 (ADM)"
+    };
+
+    const i18n = {
+      appTitle: { pt: "Auditoria HSE – Comportamento e Condições Seguras", zh: "HSE安全行为与区域安全条件审核", bi: "Auditoria HSE / HSE安全行为与区域安全条件审核" },
+      appSubtitle: { pt: "Centro de Qualidade • Segurança Operacional", zh: "品质中心 • 作业安全管理", bi: "Centro de Qualidade / 品质中心" },
+      btnExportExcel: { pt: "Excel (.xlsx)", zh: "导出 Excel", bi: "Excel / 导出 Excel" },
+      btnCancelEdit: { pt: "Cancelar", zh: "取消", bi: "Cancelar / 取消" },
+      secInfo: { pt: "1. Identificação da Auditoria", zh: "1. 审核基本信息", bi: "1. Identificação / 审核基本信息" },
+      lblCode: { pt: "Código", zh: "编码", bi: "Código / 编码" },
+      lblRev: { pt: "Revisão", zh: "版本", bi: "Revisão / 版本" },
+      lblDate: { pt: "Data", zh: "日期", bi: "Data / 日期" },
+      lblArea: { pt: "Área", zh: "区域", bi: "Área / 区域" },
+      lblShift: { pt: "Turno", zh: "班次", bi: "Turno / 班次" },
+      lblAuditor: { pt: "Auditor", zh: "审核员", bi: "Auditor / 审核员" },
+      lblAreaResp: { pt: "Resp. Área", zh: "区域负责人", bi: "Resp. Área / 区域负责人" },
+      kpiIcsTitle: { pt: "Comportamento Seguro (ICS)", zh: "安全行为指数 (ICS)", bi: "Comportamento (ICS) / 安全行为指数" },
+      kpiCondTitle: { pt: "Condições Seguras", zh: "安全条件指数", bi: "Condições / 安全条件指数" },
+      kpiOverallTitle: { pt: "Média Geral", zh: "审核综合得分", bi: "Média Geral / 审核综合得分" },
+      kpiFormulaNote: { pt: "C / (C + NC) × 100", zh: "符合 / (符合 + 不符合) × 100", bi: "C / (C + NC) × 100" },
+      secATitle: { pt: "A. Comportamento Seguro", zh: "A. 安全行为", bi: "A. COMPORTAMENTO / 安全行为" },
+      secBTitle: { pt: "B. Condições de Segurança da Área", zh: "B. 区域安全条件", bi: "B. CONDIÇÕES / 区域安全条件" },
+      thItem: { pt: "Item de Verificação", zh: "检查项目", bi: "Item / 检查项目" },
+      thCriteria: { pt: "Critério de Avaliação", zh: "审核标准", bi: "Critério / 审核标准" },
+      thStatus: { pt: "Avaliação", zh: "判定", bi: "Avaliação / 判定" },
+      thObs: { pt: "Observação", zh: "观察记录", bi: "Observação / 观察记录" },
+      thAction: { pt: "Ação Imediata", zh: "纠正措施", bi: "Ação / 纠正措施" },
+      instructionsNote: {
+        pt: "* Itens NC exigem preenchimento de Observação e Ação.",
+        zh: "* 对于 NC 项目，必须填写观察记录和纠正措施。",
+        bi: "* Itens NC exigem Observação e Ação / NC项必须填写观察和措施"
+      },
+      btnClear: { pt: "Limpar", zh: "清空", bi: "Limpar / 清空" },
+      btnSave: { pt: "💾 Salvar Lançamento", zh: "💾 保存记录", bi: "💾 Salvar / 保存记录" },
+      btnUpdate: { pt: "✅ Atualizar", zh: "✅ 更新记录", bi: "✅ Atualizar / 更新记录" },
+      secHistory: { pt: "Histórico de Lançamentos", zh: "审核历史记录", bi: "Histórico / 历史记录" },
+      btnClearAll: { pt: "Limpar Tudo", zh: "清空历史", bi: "Limpar / 清空" },
+      thHistDate: { pt: "Data", zh: "日期", bi: "Data / 日期" },
+      thHistArea: { pt: "Área", zh: "区域", bi: "Área / 区域" },
+      thHistShift: { pt: "Turno", zh: "班次", bi: "Turno / 班次" },
+      thHistAuditor: { pt: "Auditor", zh: "审核员", bi: "Auditor / 审核员" },
+      thHistCond: { pt: "Cond (%)", zh: "条件 (%)", bi: "Cond (%)" },
+      thHistActions: { pt: "Ações", zh: "操作", bi: "Ações / 操作" },
+      secZapTitle: { pt: "📱 Relatório Executivo WhatsApp", zh: "📱 微信/WhatsApp 汇报生成器", bi: "📱 Relatório WhatsApp / 微信汇报" },
+      btnCopyZap: { pt: "📋 Copiar", zh: "📋 复制", bi: "📋 Copiar / 复制" },
+      btnOpenZap: { pt: "🚀 WhatsApp", zh: "🚀 发送", bi: "🚀 WhatsApp / 发送" },
+      lblZapSource: { pt: "Origem:", zh: "选择记录:", bi: "Origem / 选择记录:" },
+      lblZapFormat: { pt: "Idioma:", zh: "语言:", bi: "Idioma / 语言:" }
+    };
+
+    const checklistItemsA = [
+      { id: "A1", num: 1, itemPt: "Uso correto dos EPIs", itemZh: "正确使用个人防护用品（PPE）", critPt: "Utiliza corretamente todos os EPIs aplicáveis à atividade, em bom estado de conservação.", critZh: "按活动要求正确、持续使用所有适用的PPE，状态良好。" },
+      { id: "A2", num: 2, itemPt: "Conhecimento da atividade", itemZh: "了解所执行的活动", critPt: "Demonstra conhecer a atividade, sequência, riscos e controles básicos.", critZh: "能够说明作业步骤、主要危险源及基本控制措施。" },
+      { id: "A3", num: 3, itemPt: "Conhecimento e entendimento da APR", itemZh: "了解并理解APR", critPt: "Conhece os perigos, riscos e medidas de controle da APR aplicável à atividade.", critZh: "了解适用APR中的危险、风险及控制措施。" },
+      { id: "A4", num: 4, itemPt: "Conhecimento e entendimento dos procedimentos e LPP", itemZh: "了解并理解作业程序和LPP", critPt: "Conhece e aplica o procedimento operacional e a LPP correspondentes à atividade.", critZh: "了解并按照作业程序和LPP执行作业。" },
+      { id: "A5", num: 5, itemPt: "5S na área operacional", itemZh: "作业区域5S", critPt: "Mantém posto organizado, materiais posicionados corretamente e circulação livre.", critZh: "保持作业岗位整洁有序，物料放置正确，通道畅通。" },
+      { id: "A6", num: 6, itemPt: "Comunicação efetiva", itemZh: "有效沟通", critPt: "Comunica riscos, desvios e condições inseguras, mantendo comunicação adequada.", critZh: "主动报告风险、偏差和不安全条件，与团队保持良好沟通。" }
+    ];
+
+    const checklistItemsB = [
+      { id: "B1", num: 1, itemPt: "Oportunidades de melhoria", itemZh: "改进机会", critPt: "Identifica oportunidades que possam melhorar a segurança e a organização da área.", critZh: "识别可能提高安全性、组织性或风险控制水平的改进机会。" },
+      { id: "B2", num: 2, itemPt: "Piso e níveis", itemZh: "地面和高低差", critPt: "Piso sem desníveis perigosos, danos, tropeços ou sujeira.", critZh: "地面无危险高低差、松动、破损或其他绊倒风险。" },
+      { id: "B3", num: 3, itemPt: "Ventilação adequada", itemZh: "通风适宜", critPt: "Ventilação compatível com a atividade e condições do ambiente.", critZh: "通风条件与活动和环境需求相适应。" },
+      { id: "B4", num: 4, itemPt: "Hidratação", itemZh: "员工饮水点", critPt: "Local adequado, seguro e acessível para hidratação dos colaboradores.", critZh: "员工可安全、方便地获得适宜的饮水地点。" },
+      { id: "B5", num: 5, itemPt: "Condições gerais de segurança", itemZh: "区域总体安全与组织", critPt: "Máquinas, equipamentos, instalações, sinalização, circulação, postos e materiais seguros.", critZh: "设备、设施、标识、通道、作业岗位和物料处于安全、有序状态。" }
+    ];
+
+    let currentResponses = {};
+    let savedAudits = JSON.parse(localStorage.getItem('hse_audits_byd_v2') || '[]');
+
+    function init() {
+      document.getElementById('metaDate').valueAsDate = new Date();
+      initEmptyResponses();
+      renderTables();
+      updateKPIs();
+      renderHistory();
+      updateZapSourceDropdown();
+      generateWhatsAppReport();
+
+      ['metaCode', 'metaRev', 'metaDate', 'metaArea', 'metaShift', 'metaAuditor', 'metaAreaResp'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => {
+          if (document.getElementById('zapSourceSelect').value === 'current') {
+            generateWhatsAppReport();
+          }
+        });
+      });
+    }
+
+    function initEmptyResponses() {
+      currentResponses = {};
+      [...checklistItemsA, ...checklistItemsB].forEach(item => {
+        currentResponses[item.id] = { status: '', obs: '', action: '' };
+      });
+    }
+
+    function formatBilingualText(pt, zh) {
+      if (currentLang === 'pt') return `<div class="item-title">${pt}</div>`;
+      if (currentLang === 'zh') return `<div class="item-title">${zh}</div>`;
+      return `<div class="item-title">${pt}</div><div class="item-sub">${zh}</div>`;
+    }
+
+    function formatCriteriaText(pt, zh) {
+      if (currentLang === 'pt') return `<div style="font-size:0.82rem; color:#d1d5db;">${pt}</div>`;
+      if (currentLang === 'zh') return `<div style="font-size:0.82rem; color:#d1d5db;">${zh}</div>`;
+      return `<div style="font-size:0.82rem; color:#e5e7eb; margin-bottom:2px;">${pt}</div><div style="font-size:0.75rem; color:var(--text-muted);">${zh}</div>`;
+    }
+
+    function renderTables() {
+      renderSectionTable('tbodySectionA', checklistItemsA);
+      renderSectionTable('tbodySectionB', checklistItemsB);
+    }
+
+    function renderSectionTable(tbodyId, items) {
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = '';
+
+      items.forEach(item => {
+        const resp = currentResponses[item.id] || { status: '', obs: '', action: '' };
+        const isNC = resp.status === 'NC';
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="center" style="font-weight:700; color:var(--accent);">${item.num}</td>
+          <td>${formatBilingualText(item.itemPt, item.itemZh)}</td>
+          <td>${formatCriteriaText(item.critPt, item.critZh)}</td>
+          <td class="center">
+            <div class="status-group">
+              <button type="button" class="status-btn c ${resp.status === 'C' ? 'active' : ''}" onclick="setStatus('${item.id}', 'C')">C</button>
+              <button type="button" class="status-btn nc ${resp.status === 'NC' ? 'active' : ''}" onclick="setStatus('${item.id}', 'NC')">NC</button>
+              <button type="button" class="status-btn na ${resp.status === 'NA' ? 'active' : ''}" onclick="setStatus('${item.id}', 'NA')">NA</button>
+            </div>
+          </td>
+          <td>
+            <textarea class="table-input ${isNC && !resp.obs.trim() ? 'required-nc' : ''}"
+              placeholder="${currentLang === 'zh' ? '观察...' : 'Obs...'}"
+              oninput="updateText('${item.id}', 'obs', this.value)">${resp.obs}</textarea>
+          </td>
+          <td>
+            <textarea class="table-input ${isNC && !resp.action.trim() ? 'required-nc' : ''}"
+              placeholder="${currentLang === 'zh' ? '措施...' : 'Ação...'}"
+              oninput="updateText('${item.id}', 'action', this.value)">${resp.action}</textarea>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function setStatus(itemId, status) {
+      if (currentResponses[itemId].status === status) {
+        currentResponses[itemId].status = '';
+      } else {
+        currentResponses[itemId].status = status;
+      }
+      renderTables();
+      updateKPIs();
+      if (document.getElementById('zapSourceSelect').value === 'current') {
+        generateWhatsAppReport();
+      }
+    }
+
+    function updateText(itemId, field, value) {
+      currentResponses[itemId][field] = value;
+      if (document.getElementById('zapSourceSelect').value === 'current') {
+        generateWhatsAppReport();
+      }
+    }
+
+    function calculateSectionScoreFromResponses(responsesObj, items) {
+      let c = 0, nc = 0, na = 0;
+      items.forEach(item => {
+        const st = responsesObj[item.id]?.status;
+        if (st === 'C') c++;
+        else if (st === 'NC') nc++;
+        else if (st === 'NA') na++;
+      });
+      const denom = c + nc;
+      const pct = denom > 0 ? (c / denom) * 100 : 0;
+      return { c, nc, na, pct };
+    }
+
+    function updateKPIs() {
+      const scoreA = calculateSectionScoreFromResponses(currentResponses, checklistItemsA);
+      const scoreB = calculateSectionScoreFromResponses(currentResponses, checklistItemsB);
+
+      const totalC = scoreA.c + scoreB.c;
+      const totalNC = scoreA.nc + scoreB.nc;
+      const overallPct = (totalC + totalNC) > 0 ? (totalC / (totalC + totalNC)) * 100 : 0;
+
+      document.getElementById('kpiIcsValue').textContent = scoreA.pct.toFixed(1) + '%';
+      document.getElementById('kpiIcsDetail').textContent = `C: ${scoreA.c} | NC: ${scoreA.nc} | NA: ${scoreA.na}`;
+
+      document.getElementById('kpiCondValue').textContent = scoreB.pct.toFixed(1) + '%';
+      document.getElementById('kpiCondDetail').textContent = `C: ${scoreB.c} | NC: ${scoreB.nc} | NA: ${scoreB.na}`;
+
+      document.getElementById('kpiOverallValue').textContent = overallPct.toFixed(1) + '%';
+    }
+
+    function setLanguage(lang) {
+      currentLang = lang;
+      document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('btn-' + lang).classList.add('active');
+
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18n[key] && i18n[key][lang]) {
+          if (key === 'btnSave' && editingRecordId !== null) {
+            el.textContent = i18n['btnUpdate'][lang];
+          } else {
+            el.textContent = i18n[key][lang];
+          }
+        }
+      });
+
+      renderTables();
+      renderHistory();
+      if (typeof updateCloudStatus === 'function') {
+        const pending = JSON.parse(localStorage.getItem('hse_pending_sync') || '[]');
+        updateCloudStatus(navigator.onLine ? 'online' : 'offline', pending.length);
+      }
+    }
+
+    function getCurrentFormRecord(customId = null) {
+      const scoreA = calculateSectionScoreFromResponses(currentResponses, checklistItemsA);
+      const scoreB = calculateSectionScoreFromResponses(currentResponses, checklistItemsB);
+      const totalC = scoreA.c + scoreB.c;
+      const totalNC = scoreA.nc + scoreB.nc;
+      const totalNA = scoreA.na + scoreB.na;
+      const overallPct = (totalC + totalNC) > 0 ? (totalC / (totalC + totalNC)) * 100 : 0;
+
+      return {
+        id: customId || Date.now(),
+        code: document.getElementById('metaCode').value.trim() || 'HSE-CK-OK-001',
+        rev: document.getElementById('metaRev').value.trim() || '01',
+        date: document.getElementById('metaDate').value || new Date().toISOString().slice(0, 10),
+        area: document.getElementById('metaArea').value,
+        shift: document.getElementById('metaShift').value,
+        auditor: document.getElementById('metaAuditor').value.trim(),
+        areaResp: document.getElementById('metaAreaResp').value.trim(),
+        ics: Number(scoreA.pct.toFixed(1)),
+        cond: Number(scoreB.pct.toFixed(1)),
+        overall: Number(overallPct.toFixed(1)),
+        totalC, totalNC, totalNA,
+        responses: JSON.parse(JSON.stringify(currentResponses))
+      };
+    }
+
+    async function saveAudit() {
+      const date = document.getElementById('metaDate').value;
+      const auditor = document.getElementById('metaAuditor').value.trim();
+
+      if (!date || !auditor) {
+        showToast(currentLang === 'zh' ? '请填写日期和审核员姓名！' : 'Preencha a Data e o nome do Auditor!');
+        return;
+      }
+
+      let missingNcDetails = false;
+      [...checklistItemsA, ...checklistItemsB].forEach(item => {
+        const r = currentResponses[item.id];
+        if (r.status === 'NC' && (!r.obs.trim() || !r.action.trim())) {
+          missingNcDetails = true;
+        }
+      });
+
+      if (missingNcDetails) {
+        renderTables();
+        showToast(currentLang === 'zh' ? 'NC项目必须填写观察记录和纠正措施！' : 'Itens marcados como NC exigem Observação e Ação!');
+        return;
+      }
+
+      const record = editingRecordId !== null ? getCurrentFormRecord(editingRecordId) : getCurrentFormRecord();
+
+      if (editingRecordId !== null) {
+        const idx = savedAudits.findIndex(r => r.id === editingRecordId);
+        if (idx !== -1) savedAudits[idx] = record;
+        exitEditMode();
+      } else {
+        savedAudits.unshift(record);
+      }
+
+      localStorage.setItem('hse_audits_byd_v2', JSON.stringify(savedAudits));
+
+      if (window.fb && navigator.onLine) {
+        try {
+          updateCloudStatus('syncing');
+          await window.fb.setDoc(window.fb.doc(window.fb.db, 'hse_audits', String(record.id)), record);
+          updateCloudStatus('online');
+          showToast(currentLang === 'zh' ? '审核记录已保存并同步至云端！' : 'Lançamento salvo e sincronizado na nuvem!');
+        } catch (e) {
+          addToOfflineQueue(record);
+        }
+      } else {
+        addToOfflineQueue(record);
+      }
+
+      renderHistory();
+      updateZapSourceDropdown(String(record.id));
+      generateWhatsAppReport();
+      resetForm();
+    }
+
+    function addToOfflineQueue(record) {
+      let pending = JSON.parse(localStorage.getItem('hse_pending_sync') || '[]');
+      pending = pending.filter(r => r.id !== record.id);
+      pending.push(record);
+      localStorage.setItem('hse_pending_sync', JSON.stringify(pending));
+      updateCloudStatus('offline', pending.length);
+      showToast(currentLang === 'zh' ? '离线保存：恢复网络后自动同步！' : 'Offline: Salvo localmente, sincronizará com internet!');
+    }
+
+    function editAudit(id) {
+      const rec = savedAudits.find(r => r.id === id);
+      if (!rec) return;
+
+      editingRecordId = id;
+      document.getElementById('metaCode').value = rec.code || 'HSE-CK-OK-001';
+      document.getElementById('metaRev').value = rec.rev || '01';
+      document.getElementById('metaDate').value = rec.date;
+      document.getElementById('metaArea').value = rec.area;
+      document.getElementById('metaShift').value = rec.shift;
+      document.getElementById('metaAuditor').value = rec.auditor;
+      document.getElementById('metaAreaResp').value = rec.areaResp || '';
+      currentResponses = JSON.parse(JSON.stringify(rec.responses));
+
+      const banner = document.getElementById('editBanner');
+      banner.style.display = 'flex';
+      document.getElementById('editBannerText').textContent = `✏️ EDITANDO: ${rec.date} • ${rec.area}`;
+
+      document.getElementById('btnSaveMain').textContent = i18n['btnUpdate'][currentLang];
+
+      renderTables();
+      updateKPIs();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function cancelEdit() {
+      exitEditMode();
+      resetForm();
+    }
+
+    function exitEditMode() {
+      editingRecordId = null;
+      document.getElementById('editBanner').style.display = 'none';
+      document.getElementById('btnSaveMain').textContent = i18n['btnSave'][currentLang];
+    }
+
+    function resetForm() {
+      if (editingRecordId !== null) exitEditMode();
+      initEmptyResponses();
+      renderTables();
+      updateKPIs();
+    }
+
+    async function deleteAudit(id) {
+      const rec = savedAudits.find(r => r.id === id);
+      if (!rec) return;
+      if (!confirm(`Excluir lançamento de ${rec.date} (${rec.area})?`)) return;
+
+      if (editingRecordId === id) exitEditMode();
+
+      savedAudits = savedAudits.filter(r => r.id !== id);
+      localStorage.setItem('hse_audits_byd_v2', JSON.stringify(savedAudits));
+      
+      let pending = JSON.parse(localStorage.getItem('hse_pending_sync') || '[]');
+      pending = pending.filter(r => r.id !== id);
+      localStorage.setItem('hse_pending_sync', JSON.stringify(pending));
+
+      if (window.fb && navigator.onLine) {
+        window.fb.deleteDoc(window.fb.doc(window.fb.db, 'hse_audits', String(id))).catch(e => {});
+      }
+
+      renderHistory();
+      updateZapSourceDropdown();
+      generateWhatsAppReport();
+    }
+
+    function clearAllRecords() {
+      if (savedAudits.length === 0) return;
+      if (confirm('Deseja apagar todo o histórico?')) {
+        savedAudits = [];
+        exitEditMode();
+        localStorage.setItem('hse_audits_byd_v2', '[]');
+        localStorage.setItem('hse_pending_sync', '[]');
+        renderHistory();
+        updateZapSourceDropdown();
+        generateWhatsAppReport();
+      }
+    }
+
+    function selectAuditForReport(id) {
+      updateZapSourceDropdown(String(id));
+      generateWhatsAppReport();
+      document.getElementById('zapReportSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderHistory() {
+      const tbody = document.getElementById('historyBody');
+      const counter = document.getElementById('recordCounter');
+      counter.textContent = `${savedAudits.length} salvos`;
+
+      if (savedAudits.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="center" style="color:var(--text-muted); padding:20px;">Nenhum lançamento.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      savedAudits.forEach(rec => {
+        const badgeIcs = rec.ics >= 90 ? 'badge-high' : (rec.ics >= 75 ? 'badge-mid' : 'badge-low');
+        const badgeCond = rec.cond >= 90 ? 'badge-high' : (rec.cond >= 75 ? 'badge-mid' : 'badge-low');
+        const sA = calculateSectionScoreFromResponses(rec.responses, checklistItemsA);
+        const sB = calculateSectionScoreFromResponses(rec.responses, checklistItemsB);
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${rec.date}</td>
+          <td><strong>${rec.area}</strong></td>
+          <td>${rec.shift}</td>
+          <td>${rec.auditor}</td>
+          <td class="center"><span class="badge ${badgeIcs}">${rec.ics.toFixed(1)}%</span></td>
+          <td class="center"><span class="badge ${badgeCond}">${rec.cond.toFixed(1)}%</span></td>
+          <td class="center" style="font-size:0.8rem;">C:${sA.c+sB.c} | NC:${sA.nc+sB.nc} | NA:${sA.na+sB.na}</td>
+          <td class="center">
+            <div class="action-btns">
+              <button class="btn-icon zap" onclick="selectAuditForReport(${rec.id})">📱 Zap</button>
+              <button class="btn-icon edit" onclick="editAudit(${rec.id})">✏️</button>
+              <button class="btn-icon del" onclick="deleteAudit(${rec.id})">🗑️</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportToExcel() {
+      let recordsToExport = [...savedAudits];
+      if (recordsToExport.length === 0) recordsToExport.push(getCurrentFormRecord());
+
+      const wb = XLSX.utils.book_new();
+      const allItems = [...checklistItemsA, ...checklistItemsB];
+
+      const fullHeaders = ["ID", "Data", "Área", "Turno", "Auditor", "Resp. Área", "Código", "Revisão", "C", "NC", "NA", "ICS (%)", "Cond (%)", "Geral (%)"];
+      allItems.forEach(it => {
+        fullHeaders.push(`${it.id} - Status`);
+        fullHeaders.push(`${it.id} - Obs`);
+        fullHeaders.push(`${it.id} - Ação`);
+      });
+
+      const fullRows = recordsToExport.map(rec => {
+        const sA = calculateSectionScoreFromResponses(rec.responses, checklistItemsA);
+        const sB = calculateSectionScoreFromResponses(rec.responses, checklistItemsB);
+        const totC = sA.c + sB.c;
+        const totNC = sA.nc + sB.nc;
+        const totNA = sA.na + sB.na;
+        const overall = (totC + totNC) > 0 ? Number(((totC / (totC + totNC)) * 100).toFixed(1)) : 0;
+
+        const row = [rec.id, rec.date, rec.area, rec.shift, rec.auditor, rec.areaResp || '', rec.code || 'HSE-CK-OK-001', rec.rev || '01', totC, totNC, totNA, rec.ics, rec.cond, overall];
+        allItems.forEach(it => {
+          const r = rec.responses[it.id] || { status: '', obs: '', action: '' };
+          row.push(r.status || '-');
+          row.push(r.obs || '');
+          row.push(r.action || '');
+        });
+        return row;
+      });
+
+      const wsFull = XLSX.utils.aoa_to_sheet([fullHeaders, ...fullRows]);
+      XLSX.utils.book_append_sheet(wb, wsFull, "Base_Completa");
+      XLSX.writeFile(wb, `HSE_Auditoria_${new Date().toISOString().slice(0, 10)}.xlsx`);
+      showToast('Excel exportado com sucesso!');
+    }
+
+    function updateZapSourceDropdown(selectedId = null) {
+      const sel = document.getElementById('zapSourceSelect');
+      const prevVal = selectedId || sel.value;
+      sel.innerHTML = '';
+      const optCurrent = document.createElement('option');
+      optCurrent.value = 'current';
+      optCurrent.textContent = '📝 Formulário Atual / 当前表单';
+      sel.appendChild(optCurrent);
+
+      savedAudits.forEach(rec => {
+        const opt = document.createElement('option');
+        opt.value = String(rec.id);
+        opt.textContent = `📌 ${rec.date} | ${rec.area} (${rec.auditor})`;
+        sel.appendChild(opt);
+      });
+
+      if (prevVal && [...sel.options].some(o => o.value === prevVal)) {
+        sel.value = prevVal;
+      } else {
+        sel.value = 'current';
+      }
+    }
+
+    function formatDateBR(isoDate) {
+      if (!isoDate || !isoDate.includes('-')) return isoDate;
+      const [y, m, d] = isoDate.split('-');
+      return `${d}/${m}/${y}`;
+    }
+
+    function generateWhatsAppReport() {
+      const sourceVal = document.getElementById('zapSourceSelect').value;
+      const fmtSelect = document.getElementById('zapFormatSelect');
+      const fmt = fmtSelect ? fmtSelect.value : 'bi';
+
+      let rec = sourceVal === 'current' ? getCurrentFormRecord() : (savedAudits.find(r => String(r.id) === sourceVal) || getCurrentFormRecord());
+
+      const sA = calculateSectionScoreFromResponses(rec.responses, checklistItemsA);
+      const sB = calculateSectionScoreFromResponses(rec.responses, checklistItemsB);
+      const totC = sA.c + sB.c;
+      const totNC = sA.nc + sB.nc;
+      const totNA = sA.na + sB.na;
+      const overall = (totC + totNC) > 0 ? ((totC / (totC + totNC)) * 100).toFixed(1) : '0.0';
+
+      const statusBadgePt = totNC === 0 ? '✅ 100% CONFORME (SEM DESVIOS)' : `⚠️ ATENÇÃO: ${totNC} NÃO CONFORMIDADE(S)`;
+      const statusBadgeZh = totNC === 0 ? '✅ 全部符合 (无异常偏差)' : `⚠️ 发现 ${totNC} 项不符合 (需整改跟进)`;
+
+      const areaZh = areaMapZh[rec.area] || rec.area;
+      const shiftZh = shiftMapZh[rec.shift] || rec.shift;
+      const dateBr = formatDateBR(rec.date);
+
+      const ncList = [];
+      const obsCList = [];
+
+      [...checklistItemsA.map(i => ({ ...i, secPt: 'Comportamento', secZh: '安全行为' })),
+       ...checklistItemsB.map(i => ({ ...i, secPt: 'Condições', secZh: '安全条件' }))]
+      .forEach(item => {
+        const r = rec.responses[item.id] || { status: '', obs: '', action: '' };
+        if (r.status === 'NC') ncList.push({ item, obs: r.obs, action: r.action });
+        else if (r.obs && r.obs.trim() !== '') obsCList.push({ item, status: r.status, obs: r.obs, action: r.action });
+      });
+
+      let text = '';
+      if (fmt === 'bi') {
+        text += `🏭 *BYD AUTO BRASIL | CENTRO DE QUALIDADE (VQ)*\n`;
+        text += `🛡️ *RELATÓRIO EXECUTIVO DE AUDITORIA HSE*\n`;
+        text += `*HSE安全行为与区域安全条件审核汇报*\n`;
+        text += `━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `📅 *Data / 日期:* ${dateBr}\n`;
+        text += `📍 *Área / 区域:* ${areaZh}\n`;
+        text += `🕒 *Turno / 班次:* ${shiftZh}\n`;
+        text += `👤 *Auditor / 审核员:* ${rec.auditor || '-'}\n`;
+        if (rec.areaResp) text += `👷 *Resp. Área / 区域负责人:* ${rec.areaResp}\n`;
+        text += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+        text += `📊 *INDICADORES / 审核关键指标*\n`;
+        text += `• *ICS (Comportamento / 安全行为):* *${rec.ics.toFixed(1)}%* (C:${sA.c} | NC:${sA.nc} | NA:${sA.na})\n`;
+        text += `• *Condições Seguras / 区域安全条件:* *${rec.cond.toFixed(1)}%* (C:${sB.c} | NC:${sB.nc} | NA:${sB.na})\n`;
+        text += `• *Índice Geral / 综合得分:* *${overall}%*\n`;
+        text += `• *Status / 结论:* ${statusBadgePt} | ${statusBadgeZh}\n\n`;
+
+        if (ncList.length > 0) {
+          text += `🚨 *NÃO CONFORMIDADES / 不符合项 (${ncList.length})*\n`;
+          ncList.forEach((entry, idx) => {
+            text += `\n*${idx + 1}. [${entry.item.secPt} / ${entry.item.secZh}] ${entry.item.itemPt} (${entry.item.itemZh})*\n`;
+            text += `   🔸 *Desvio / 问题:* ${entry.obs || '-'}\n`;
+            text += `   🛠️ *Ação / 措施:* ${entry.action || '-'}\n`;
+          });
+          text += `\n`;
+        } else {
+          text += `✅ *Nenhuma NC identificada / 本次审核无不符合项。*\n\n`;
+        }
+
+        if (obsCList.length > 0) {
+          text += `📝 *OBSERVAÇÕES / 补充记录*\n`;
+          obsCList.forEach(entry => { text += `• *${entry.item.itemPt} (${entry.item.itemZh}):* ${entry.obs}\n`; });
+          text += `\n`;
+        }
+        text += `━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `_Qualidade VQ • Segurança em Primeiro Lugar | 安全第一_`;
+      } else if (fmt === 'zh') {
+        text += `🏭 *比亚迪巴西工厂 (BYD) | 品质中心 (VQ)*\n`;
+        text += `🛡️ *HSE安全行为与区域安全条件审核报告*\n`;
+        text += `━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `📅 *审核日期:* ${dateBr}\n`;
+        text += `📍 *审核区域:* ${areaZh}\n`;
+        text += `🕒 *班次:* ${shiftZh}\n`;
+        text += `👤 *审核员:* ${rec.auditor || '-'}\n`;
+        if (rec.areaResp) text += `👷 *区域负责人:* ${rec.areaResp}\n`;
+        text += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+        text += `📊 *核心审核指标*\n`;
+        text += `• *安全行为指数 (ICS):* *${rec.ics.toFixed(1)}%* (符合:${sA.c} | 不符合:${sA.nc})\n`;
+        text += `• *区域安全条件指数:* *${rec.cond.toFixed(1)}%* (符合:${sB.c} | 不符合:${sB.nc})\n`;
+        text += `• *综合得分:* *${overall}%*\n`;
+        text += `• *总体结论:* ${statusBadgeZh}\n\n`;
+
+        if (ncList.length > 0) {
+          text += `🚨 *不符合项 (NC) 及整改措施 (${ncList.length}项)*\n`;
+          ncList.forEach((entry, idx) => {
+            text += `\n*${idx + 1}. [${entry.item.secZh}] ${entry.item.itemZh}*\n`;
+            text += `   🔸 *问题:* ${entry.obs || '-'}\n`;
+            text += `   🛠️ *措施:* ${entry.action || '-'}\n`;
+          });
+          text += `\n`;
+        } else {
+          text += `✅ *本次审核无异常偏差 (0 NC)。*\n\n`;
+        }
+        text += `━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `_品质中心 VQ • 安全第一，预防为主_`;
+      } else {
+        text += `🏭 *BYD AUTO BRASIL | CENTRO DE QUALIDADE (VQ)*\n`;
+        text += `🛡️ *RELATÓRIO EXECUTIVO DE AUDITORIA HSE*\n`;
+        text += `━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `📅 *Data:* ${dateBr}\n`;
+        text += `📍 *Área:* ${rec.area}\n`;
+        text += `🕒 *Turno:* ${rec.shift}\n`;
+        text += `👤 *Auditor:* ${rec.auditor || '-'}\n`;
+        if (rec.areaResp) text += `👷 *Resp. Área:* ${rec.areaResp}\n`;
+        text += `━━━━━━━━━━━━━━━━━━━━\n\n`;
+        text += `📊 *INDICADORES*\n`;
+        text += `• *ICS:* *${rec.ics.toFixed(1)}%*\n`;
+        text += `• *Condições Seguras:* *${rec.cond.toFixed(1)}%*\n`;
+        text += `• *Média Geral:* *${overall}%*\n`;
+        text += `• *Status:* ${statusBadgePt}\n\n`;
+
+        if (ncList.length > 0) {
+          text += `🚨 *NÃO CONFORMIDADES (${ncList.length})*\n`;
+          ncList.forEach((entry, idx) => {
+            text += `\n*${idx + 1}. ${entry.item.itemPt}*\n`;
+            text += `   🔸 *Obs:* ${entry.obs || '-'}\n`;
+            text += `   🛠️ *Ação:* ${entry.action || '-'}\n`;
+          });
+          text += `\n`;
+        } else {
+          text += `✅ *Nenhuma Não Conformidade identificada.*\n\n`;
+        }
+        text += `━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `_Qualidade VQ • Segurança em Primeiro Lugar_`;
+      }
+
+      document.getElementById('zapPreviewBox').textContent = text;
+    }
+
+    function copyWhatsAppReport() {
+      navigator.clipboard.writeText(document.getElementById('zapPreviewBox').textContent).then(() => {
+        showToast(currentLang === 'zh' ? '已复制汇报内容！' : 'Relatório copiado para o WhatsApp!');
+      });
+    }
+
+    function sendToWhatsApp() {
+      const text = document.getElementById('zapPreviewBox').textContent;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
